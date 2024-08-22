@@ -8,8 +8,10 @@ import torch.nn.functional as F
 from sample_model_losses import sample_model_losses
 
 def unlearn_BNN(model, optimizer, forget_loader, val_loader, unlearn_config, retain_model, path, verbose=False):
+    method = unlearn_config['unlearn_method']
+
     num_batches = len(forget_loader)
-    train_set_size = len(forget_loader.dataset)
+    forget_set_size = len(forget_loader.dataset)
     val_set_size = len(val_loader.dataset)
     batch_size = unlearn_config['batch_size']
     samples = unlearn_config['sample_size']
@@ -17,6 +19,8 @@ def unlearn_BNN(model, optimizer, forget_loader, val_loader, unlearn_config, ret
     device = unlearn_config['device']
     
     model.train()
+    if verbose:
+        print(f'Unlearning model on {forget_set_size} samples')
     
 
     # Define custom metrics to ensure correct step tracking
@@ -41,12 +45,16 @@ def unlearn_BNN(model, optimizer, forget_loader, val_loader, unlearn_config, ret
                 classification=True, div_type=unlearn_config['unlearn_div_type']
             )
             
+            if results['prior_pred_cov_loss'] is None:
+                results['prior_pred_cov_loss'] = 0
+            if results['prior_pred_mean_loss'] is None:
+                results['prior_pred_mean_loss'] = 0
+            
             gvo = - (1 - unlearn_config['prior_loss_weight']) * results['negative_log_likelihood']
             gvo += unlearn_config['prior_loss_weight'] * unlearn_config['prior_cov_weight'] * results['prior_pred_cov_loss']
             gvo += unlearn_config['prior_loss_weight'] * (1 - unlearn_config['prior_cov_weight']) * results['prior_pred_mean_loss']
-            gvo += results['prior_regularisation_term'] / train_set_size
+            gvo += results['prior_regularisation_term'] / forget_set_size
 
-            train_nll = results['negative_log_likelihood']
             results['generalized_variational_objective'] = gvo
             
             if verbose:
@@ -57,11 +65,11 @@ def unlearn_BNN(model, optimizer, forget_loader, val_loader, unlearn_config, ret
             
             # Log to wandb without using `global_step`
             wandb.log({'unlearn/global_step': epoch * num_batches + batch_idx, 
-                       **{'unlearn/'+key: results[key].item() for key in results if results[key] is not None} })
+                       **{'unlearn/'+key: results[key].item() for key in results if results[key] !=0} })
             
-        if torch.isnan(gvo).any() or torch.isnan(train_nll).any():
-            print(f'NaN detected in GVO or NLL at epoch {epoch}, batch {batch_idx}')
-            print(f'GVO: {gvo}, NLL: {train_nll}')
+        if torch.isnan(gvo).any():
+            print(f'NaN detected in GVO at epoch {epoch}, batch {batch_idx}')
+            print(f'GVO: {gvo}')
             break  # Or handle it as needed
 
         model.eval()
@@ -105,7 +113,7 @@ def unlearn_BNN(model, optimizer, forget_loader, val_loader, unlearn_config, ret
             torch.save(model.state_dict(), f'{path}/{epoch}.pth')
             
         if epoch % 10 == 0 or epoch == n_epochs - 1:
-            print({key: results[key].item() for key in results if results[key] is not None })
+            print({key: results[key].item() for key in results if results[key] !=0 })
             
             print(f'Epoch {epoch} validation NLL: {val_nll}')
             
@@ -135,15 +143,20 @@ def unlearn_BNN(model, optimizer, forget_loader, val_loader, unlearn_config, ret
             
             print(f'Overall Accuracy: {accuracy:.4f}')
             print(f'Concurrence with retain model: {concurrence:.4f}')
-            wandb.log({'trace/depoch': (epoch+1)//10, 'trace/accuracy': accuracy, 'trace/retain_model_concurrence': concurrence})
 
             # Compute precision, recall, and F1 score for each class
             class_names = val_loader.dataset.classes
             report = classification_report(all_labels, unlearn_preds, target_names=class_names, output_dict=True)
             report.update({"accuracy": {"precision": None, "recall": None, "f1-score": report["accuracy"], "support": report['macro avg']['support']}}) 
+            
             concur_report = classification_report(retain_preds, unlearn_preds, target_names=class_names, output_dict=True)
-            concur_report.update({"accuracy": {"precision": None, "recall": None, "f1-score": report["accuracy"], "support": report['macro avg']['support']}}) 
+            concur_report.update({"accuracy": {"precision": None, "recall": None, "f1-score": concur_report["accuracy"], "support": concur_report['macro avg']['support']}}) 
+            
             report_df = pandas.DataFrame(report).transpose()
             concur_report_df = pandas.DataFrame(concur_report).transpose()
-            wandb.log({'trace/accuracy_report': wandb.Table(dataframe= report_df), 'trace/concurrency_report': wandb.Table(dataframe = concur_report_df)})
+            
+            print(report_df)
+            print(concur_report_df)
+            
+            wandb.log({'trace/depoch': (epoch+1)//10, 'trace/accuracy': accuracy, 'trace/retain_model_concurrence': concurrence, 'trace/accuracy_report': wandb.Table(dataframe= report_df), 'trace/concurrency_report': wandb.Table(dataframe = concur_report_df)})
     wandb.finish()

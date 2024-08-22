@@ -16,6 +16,8 @@ def train_BNN(model, optimizer, train_loader, val_loader, train_config, path, ve
     device = train_config['device']
     
     model.train()
+    if verbose:
+        print(f'Training model on {train_set_size} samples')
     
     # Define custom metrics to ensure correct step tracking
     wandb.define_metric("val/epoch")
@@ -107,6 +109,6 @@ def train_BNN(model, optimizer, train_loader, val_loader, train_config, path, ve
             report.update({"accuracy": {"precision": None, "recall": None, "f1-score": report["accuracy"], "support": report['macro avg']['support']}}) 
             report_df = pandas.DataFrame(report).transpose()
             wandb.log({'trace/report': wandb.Table(dataframe = report_df)})
-            print(classification_report(all_labels, all_preds, target_names=class_names))
+            print(report_df)
 
     wandb.finish()

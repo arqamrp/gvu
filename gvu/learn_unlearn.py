@@ -8,7 +8,8 @@ from unlearn_BNN import unlearn_BNN
 import wandb
 
 
-def learn_unlearn(dataset_config, forget_idx, learn_unlearn_config, model_init_config , retain= True, full_train = True, unlearn = True):
+
+def learn_unlearn(dataset_config, forget_idx, learn_unlearn_config, model_init_config):
     # initialise
     device = learn_unlearn_config['device']
     name = dataset_config['name']
@@ -29,7 +30,7 @@ def learn_unlearn(dataset_config, forget_idx, learn_unlearn_config, model_init_c
     forget_loader =  DataLoader(forget_set, batch_size = learn_unlearn_config['batch_size'], shuffle = True)
     
     # train on retain set only
-    if retain:
+    if learn_unlearn_config['retain']:
         retain_path = f'ckp/{project_id}/retain'
         if not os.path.exists(retain_path):
             os.makedirs(retain_path)
@@ -45,11 +46,11 @@ def learn_unlearn(dataset_config, forget_idx, learn_unlearn_config, model_init_c
         torch.save(retain_model.state_dict(), f'{retain_path}.pth')
         print(f'Retain set model trained and saved to ckp/{project_id}/retain.pth')
     else: 
-        full_trainset_model = BayesianNN(model_init_config).to(device)
-        retain_model.load_state_dict(f'ckp/{project_id}/retain.pth')
+        retain_model = BayesianNN(model_init_config).to(device)
+        retain_model.load_state_dict(torch.load(f'ckp/{project_id}/retain.pth'))
         
     # train on full train set
-    if full_train:
+    if learn_unlearn_config['full_train']:
         full_path = f'ckp/{project_id}/full'
         if not os.path.exists(full_path):
             os.makedirs(full_path)
@@ -65,12 +66,12 @@ def learn_unlearn(dataset_config, forget_idx, learn_unlearn_config, model_init_c
         full_trainset_model.freeze()
     else:
         full_trainset_model = BayesianNN(model_init_config).to(device)
-        full_trainset_model.load_state_dict(f'ckp/{project_id}/full.pth')
+        full_trainset_model.load_state_dict(torch.load(f'ckp/{project_id}/full.pth'))
         full_trainset_model.freeze()
     
     
     # unlearning on forget set
-    if unlearn:
+    if learn_unlearn_config['unlearn']:
         unlearn_path = f'ckp/{project_id}/unlearn'
         if not os.path.exists(unlearn_path):
             os.makedirs(unlearn_path)
@@ -82,4 +83,3 @@ def learn_unlearn(dataset_config, forget_idx, learn_unlearn_config, model_init_c
         full_trainset_model.eval()
         torch.save(full_trainset_model.state_dict(), f'ckp/{project_id}/unlearn.pth')
         print(f'Unlearning model trained and saved to ckp/{project_id}/unlearn.pth')
-    
