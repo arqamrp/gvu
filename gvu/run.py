@@ -1,7 +1,7 @@
 import torch
 from torchvision import datasets, transforms
 
-from generate_sets import generate_sets
+from generate_sets import generate_classification_sets
 from learn_unlearn import learn_unlearn
 
 import os
