@@ -39,29 +39,40 @@ class BayesianLinear(nn.Module):
         self.weight_frozen_prior_rho = None
         self.bias_frozen_prior_mu = None
         self.bias_frozen_prior_rho = None
+
+        self.last_sampled_weight = None
+        self.last_sampled_bias = None
     
-    def forward(self, x, sample = False, prior = False, frozen_prior = False):
+    def forward(self, x, sample = False, prior = False, frozen_prior = False, reuse = False):
         device = self.weight_prior_mu.device
-        if prior:
+        if reuse:
+            w = self.last_sampled_weight
+            b = self.last_sampled_bias
+        elif prior:
             w = self.weight_prior.sample(device)
             b = self.bias_prior.sample(device)
-        # elif frozen_prior:
-        #     w = self.weight_frozen_prior.sample(device)
-        #     b = self.bias_frozen_prior.sample(device)
-        elif self.training or sample:
+        elif frozen_prior:
+            w = self.weight_frozen_prior.sample(device)
+            b = self.bias_frozen_prior.sample(device)
+        elif sample:
             w = self.weight.sample(device)
             b = self.bias.sample(device)
         else:
             w = self.weight.mu
             b = self.bias.mu
+        
+        self.last_sampled_weight = w
+        self.last_sampled_bias = b
+        return F.linear(x, w, b)
 
-        if not prior:
-            self.posterior_log_prob = self.weight.log_prob(w) + self.bias.log_prob(b)
+        def posterior_log_prob(self):
+            return self.weight.log_prob(self.last_sampled_weight) + self.bias.log_prob(self.last_sampled_bias)
+        
         # self.prior_log_probs = self.weight_prior.log_prob(w) + self.bias_prior.log_prob(b)
         # self.frozen_prior_log_probs = self.weight_frozen_prior.log_prob(w) + self.bias_frozen_prior.log_prob(b)
 
 
-        return F.linear(x, w, b)
+        
 
     def freeze(self):
         # deepcopy current params to store as a new prior
