@@ -13,12 +13,16 @@ def learn_unlearn(dataset_config, forget_idx, learn_unlearn_config, model_init_c
     # initialise
     device = learn_unlearn_config['device']
     name = dataset_config['name']
-    div_type = learn_unlearn_config['train_div_type']
+    div_type = learn_unlearn_config['div_type']
     plw = learn_unlearn_config['prior_loss_weight']
     opt = learn_unlearn_config['optimizer']
-    method = learn_unlearn_config['unlearn_method']
+
+    plw = learn_unlearn_config['plw']
+    adj_lam = learn_unlearn_config['adj_lam']
+    # method = learn_unlearn_config['unlearn_method']
+
     
-    project_id = f"GVU-{name}-{forget_idx}-{div_type}-{plw}-{method}"
+    project_id = f"GVU-{name}-{forget_idx}-{div_type}-{adj_lam}-{plw}"
     
     if not os.path.exists(f'ckp/{project_id}'):
         os.makedirs(f'ckp/{project_id}')

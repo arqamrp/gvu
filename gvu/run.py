@@ -17,11 +17,13 @@ parser.add_argument('--retain', type = bool, default = True, help = 'Whether to 
 parser.add_argument('--full_train', type = bool, default = False, help = 'Whether to train on the full train set')
 parser.add_argument('--unlearn', type = bool, default = False, help = 'Whether to unlearn')
 
-parser.add_argument('--unlearn_method', type=str, default=None, help='Method for unlearning. Options: [eubo, al, ewc, pm]')
+# parser.add_argument('--unlearn_method', type=str, default=None, help='Method for unlearning. Options: [eubo, pm]')
 
 parser.add_argument('--div_type', type=str, default=None, help='Divergence type for training (default: RKL)')
 parser.add_argument('--alpha', type=float, default=None, help='Alpha value for training divergence (if applicable)')
+
 parser.add_argument('--adj_lam', type=float, default=0., help='Likelihood adjustment threshold')
+parser.add_argument('--plw', type=float, default=0., help='Prior loss weight')
 # parser.add_argument('--unlearn_div_type', type=str, default= None, help='Divergence type for unlearning (default: RKL)')
 # parser.add_argument('--unlearn_alpha', type=float, default=None, help='Alpha value for unlearning divergence (if applicable)')
 
@@ -121,9 +123,9 @@ if __name__ == '__main__':
             'alpha': args.alpha,
             
             'unlearn_epochs': 100,
-            'prior_loss_weight': 0,
-            'prior_cov_weight': 0,
-            'unlearn_method': args.unlearn_method,
+            'prior_loss_weight': args.plw,
+            # 'prior_cov_weight': 0,
+            # 'unlearn_method': args.unlearn_method,
 
             'retain': args.retain,
             'full_train': args.full_train,
