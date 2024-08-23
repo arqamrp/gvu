@@ -21,19 +21,21 @@ def sample_model_losses(model, x, target, samples, device,
         batch_size = x.shape[0]
         
         # holding tensors
+        if unlearn:
+            adjust = torch.zeros(samples, batch_size).to(device)
+            prior_preds = torch.zeros(samples, batch_size, target_dims).to(device)
+            for i in range(samples):
+                if prior_loss_weight != 0 and unlearn:
+                    prior_preds[i] = model.forward(x, prior = True)                
+                if model.posterior_log_prob() > adj_lam * model.max_log_prob_frozen_prior():
+                    adjust[i, :] += 1
+        else:
+            adjust = 1
+
         preds = torch.zeros(samples, batch_size, target_dims).to(device)
-        adjust = torch.zeros(samples, batch_size).to(device)
-        prior_preds = torch.zeros(samples, batch_size, target_dims).to(device)
-        
-        # filling them in
         for i in range(samples):
-            if prior_loss_weight != 0 and unlearn:
-                prior_preds[i] = model.forward(x, prior = True)
             preds[i] = model.forward(x, sample = True)
-        
-            if model.posterior_log_prob() > adj_lam * model.max_log_prob_frozen_prior():
-                adjust[i, :] += 1
-        
+
         # compute negative log likelihood
         if classification:
             pred_probs = F.softmax(preds, dim = 1)      # probabilities from unnormalised logits
@@ -46,6 +48,7 @@ def sample_model_losses(model, x, target, samples, device,
 
         
         # compute prior predictive loss
+        
         if prior_loss_weight != 0 and unlearn:
             if classification:
                 prior_pred_probs = F.softmax(prior_preds, dim = 1) # probabilities from unnormalised logits
@@ -70,7 +73,7 @@ def sample_model_losses(model, x, target, samples, device,
                 # prior_pred_cov_loss = torch.linalg.matrix_norm( prior_pred_cov - pred_cov, ord ='fro', dim = (1, 2)).mean()
         else:
             prior_pred_mean_loss = None
-            prior_pred_cov_loss = None
+            # prior_pred_cov_loss = None
         
         divergence = model.divergence(unlearn = unlearn, div_type = div_type, alpha = alpha)
         
@@ -78,5 +81,4 @@ def sample_model_losses(model, x, target, samples, device,
             'prior_regularisation_term' : divergence,
             'negative_log_likelihood': negative_log_likelihood,
             'prior_pred_mean_loss' : prior_pred_mean_loss,
-            'ewc_loss': ewc_loss,
         }
