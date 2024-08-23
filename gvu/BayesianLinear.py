@@ -216,4 +216,7 @@ class BayesianLinear(nn.Module):
 
 #         # Pearson Divergence
         elif div_type == "PEAR":
-            self.divergence(unlearn = unlearn, div_type = 'A', alpha = 2)
+            return self.divergence(unlearn = unlearn, div_type = 'A', alpha = 2)
+        
+        else:
+            raise ValueError(f"Invalid divergence type: {div_type}")
