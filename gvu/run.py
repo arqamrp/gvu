@@ -138,6 +138,6 @@ if __name__ == '__main__':
         }
 
         for dataset_config in dataset_configs:
-            generate_sets(dataset_config)
+            generate_classification_sets(dataset_config)
             for forget_idx in range(len(dataset_config['forget_set_configs'])):
                 learn_unlearn(dataset_config, forget_idx, learn_unlearn_config=learn_unlearn_config, model_init_config=model_init_config, retain=True, full_train=True, unlearn=True)
