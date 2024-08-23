@@ -125,13 +125,12 @@ if __name__ == '__main__':
             'unlearn_epochs': 100,
             'prior_loss_weight': args.plw,
             # 'prior_cov_weight': 0,
-            # 'unlearn_method': args.unlearn_method,
+
 
             'retain': args.retain,
             'full_train': args.full_train,
             'unlearn': args.unlearn,
 
-            'unlearn_method': args.unlearn_method,
             'adj_lam': args.adj_lam
         }
 
