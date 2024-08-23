@@ -8,8 +8,6 @@ import torch.nn.functional as F
 from sample_model_losses import sample_model_losses
 
 def unlearn_BNN(model, optimizer, forget_loader, val_loader, unlearn_config, retain_model, path, verbose=False):
-    method = unlearn_config['unlearn_method']
-
     num_batches = len(forget_loader)
     forget_set_size = len(forget_loader.dataset)
     val_set_size = len(val_loader.dataset)
@@ -33,9 +31,9 @@ def unlearn_BNN(model, optimizer, forget_loader, val_loader, unlearn_config, ret
     wandb.define_metric("unlearn/global_step")
     wandb.define_metric("unlearn/*", step_metric="unlearn/global_step")
     
-    method = unlearn_config['method']
-    
-    adj_lam = unlearn_config['adj_lam']
+    # method = unlearn_config['method']
+    # plw = unlearn_config['plw']
+    # adj_lam = unlearn_config['adj_lam']
 
 
     for epoch in tqdm(range(0, n_epochs)):
