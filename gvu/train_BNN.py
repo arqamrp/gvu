@@ -56,7 +56,7 @@ def train_BNN(model, optimizer, train_loader, val_loader, train_config, path, ve
         with torch.no_grad():
             for data, target in val_loader:
                 data, target = data.to(device), target.to(device)
-                val_results = sample_model_losses(model, data, target, samples=samples, device=device, unlearn=False, div_type=train_config['train_div_type'])
+                val_results = sample_model_losses(model, data, target, samples=samples, device=device, unlearn=False, div_type=train_config['div_type'], alpha = train_config['alpha'])
                 val_nll += val_results['negative_log_likelihood'].item()
 
         val_nll = val_nll / len(val_loader)

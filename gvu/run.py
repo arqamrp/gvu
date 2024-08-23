@@ -19,10 +19,11 @@ parser.add_argument('--unlearn', type = bool, default = False, help = 'Whether t
 
 parser.add_argument('--unlearn_method', type=str, default=None, help='Method for unlearning. Options: [eubo, al, ewc, pm]')
 
-parser.add_argument('--train_div_type', type=str, default=None, help='Divergence type for training (default: RKL)')
-parser.add_argument('--train_alpha', type=float, default=None, help='Alpha value for training divergence (if applicable)')
-parser.add_argument('--unlearn_div_type', type=str, default= None, help='Divergence type for unlearning (default: RKL)')
-parser.add_argument('--unlearn_alpha', type=float, default=None, help='Alpha value for unlearning divergence (if applicable)')
+parser.add_argument('--div_type', type=str, default=None, help='Divergence type for training (default: RKL)')
+parser.add_argument('--alpha', type=float, default=None, help='Alpha value for training divergence (if applicable)')
+parser.add_argument('--adj_lam', type=float, default=0., help='Likelihood adjustment threshold')
+# parser.add_argument('--unlearn_div_type', type=str, default= None, help='Divergence type for unlearning (default: RKL)')
+# parser.add_argument('--unlearn_alpha', type=float, default=None, help='Alpha value for unlearning divergence (if applicable)')
 
 
 # Options:
@@ -30,12 +31,12 @@ parser.add_argument('--unlearn_alpha', type=float, default=None, help='Alpha val
 if __name__ == '__main__':
         args = parser.parse_args()
 
-        if args.train_div_type is not None and args.unlearn_div_type is not None:
-            assert args.train_div_type == args.unlearn_div_type, 'Train and unlearn divergence types must match'
-            assert args.train_alpha == args.unlearn_alpha, 'Train and unlearn alpha values must match'
-        elif args.train_div_type is not None and args.unlearn_div_type is None:
-            args.unlearn_div_type = args.train_div_type
-            args.unlearn_alpha = args.train_alpha
+        # if args.train_div_type is not None and args.unlearn_div_type is not None:
+        #     assert args.train_div_type == args.unlearn_div_type, 'Train and unlearn divergence types must match'
+        #     assert args.train_alpha == args.unlearn_alpha, 'Train and unlearn alpha values must match'
+        # elif args.train_div_type is not None and args.unlearn_div_type is None:
+        #     args.unlearn_div_type = args.train_div_type
+        #     args.unlearn_alpha = args.train_alpha
 
 
         dataset_configs = [
@@ -59,10 +60,10 @@ if __name__ == '__main__':
 
                 'val_size': 5000,
                 'forget_set_configs': [
-                    {0 : 5000, 1: 5000}, 
-                    {0 : 2500, 1: 2500, 2: 2500, 3: 2500}, 
-                    {i : 2000 for i in range(5)} ,
-                    {i : 1000 for i in range(10)} 
+                    {i : 1000 for i in range(10)},
+                    {i : 2000 for i in range(5)},
+                    {0 : 2500, 1: 2500, 2: 2500, 3: 2500},
+                    {0 : 5000, 1: 5000}
                 ]
             },
             
@@ -86,10 +87,10 @@ if __name__ == '__main__':
                 
                 'val_size': 5000,
                 'forget_set_configs': [
-                    {0 : 5000, 1: 5000},
-                    {0 : 2500, 1: 2500, 2: 2500, 3: 2500}, 
+                    {i : 1000 for i in range(10)},
                     {i : 2000 for i in range(5)},
-                    {i : 1000 for i in range(10)} 
+                    {0 : 2500, 1: 2500, 2: 2500, 3: 2500},
+                    {0 : 5000, 1: 5000}
                 ]
             }
         ]
@@ -112,11 +113,12 @@ if __name__ == '__main__':
             'loader_kwargs': {'num_workers': 0, 'pin_memory': True} if torch.cuda.is_available() else {},
             'device': torch.device('cuda' if torch.cuda.is_available() else 'mps' if torch.backends.mps.is_available() else 'cpu'),
             'optimizer': torch.optim.Adam,
-            'lr': 1e-4,
+            'lr': 1e-3,
             
             'train_epochs': 200,
-            'train_div_type': args.train_div_type,
-            'train_alpha': args.train_alpha,
+            
+            'div_type': args.div_type,
+            'alpha': args.alpha,
             
             'unlearn_epochs': 100,
             'prior_loss_weight': 0,
@@ -127,9 +129,8 @@ if __name__ == '__main__':
             'full_train': args.full_train,
             'unlearn': args.unlearn,
 
-            'unlearn_div_type': args.unlearn_div_type,
-            'unlearn_alpha': args.unlearn_alpha,
-            'unlearn_method': args.unlearn_method
+            'unlearn_method': args.unlearn_method,
+            'adj_lam': args.adj_lam
         }
 
         test_config = {

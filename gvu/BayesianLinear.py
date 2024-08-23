@@ -71,9 +71,6 @@ class BayesianLinear(nn.Module):
         # self.prior_log_probs = self.weight_prior.log_prob(w) + self.bias_prior.log_prob(b)
         # self.frozen_prior_log_probs = self.weight_frozen_prior.log_prob(w) + self.bias_frozen_prior.log_prob(b)
 
-
-        
-
     def freeze(self):
         # deepcopy current params to store as a new prior
         self.weight_frozen_prior_mu = nn.Parameter(deepcopy(self.weight_mu.detach()), requires_grad=False)
@@ -184,39 +181,39 @@ class BayesianLinear(nn.Module):
         
         # Alpha-Renyi Divergence
         elif div_type == "AR":
-            weight_sigma2_a = self.alpha * weight_prior_sigma**2 + (1-self.alpha) * self.weight.sigma**2
+            weight_sigma2_a = alpha * weight_prior_sigma**2 + (1-alpha) * self.weight.sigma**2
             weight_div = torch.log(weight_prior_sigma/ self.weight.sigma)
-            weight_div += 0.5 * torch.log(weight_prior_sigma/weight_sigma2_a) / (self.alpha- 1)
-            weight_div += 0.5 * self.alpha * (self.weight.mu - weight_prior_mu)**2 / weight_sigma2_a
+            weight_div += 0.5 * torch.log(weight_prior_sigma/weight_sigma2_a) / (alpha- 1)
+            weight_div += 0.5 * alpha * (self.weight.mu - weight_prior_mu)**2 / weight_sigma2_a
             weight_div = weight_div.sum()
 
-            bias_sigma2_a = self.alpha * bias_prior_sigma**2 + (1-self.alpha) * self.bias.sigma**2
+            bias_sigma2_a = alpha * bias_prior_sigma**2 + (1-alpha) * self.bias.sigma**2
             bias_div = torch.log(bias_prior_sigma / self.bias.sigma)
-            bias_div += 0.5 * torch.log(bias_prior_sigma/bias_sigma2_a) / (self.alpha- 1) 
-            bias_div += 0.5 * self.alpha * (self.bias.mu - bias_prior_mu)**2 / bias_sigma2_a
+            bias_div += 0.5 * torch.log(bias_prior_sigma/bias_sigma2_a) / (alpha- 1) 
+            bias_div += 0.5 * alpha * (self.bias.mu - bias_prior_mu)**2 / bias_sigma2_a
             bias_div = bias_div.sum()
          
             return weight_div + bias_div
 
         # Alpha Divergence
         elif div_type == "A":
-            weight_sigma2_a = self.alpha* weight_prior_sigma**2 + (1-self.alpha)* self.weight.sigma**2
-            weight_frac = (weight_prior_sigma**self.alpha) * (self.weight.sigma**(1-self.alpha)) / torch.sqrt(weight_sigma2_a)
-            weight_exp  = torch.exp( - 0.5 * (self.alpha) * (1-self.alpha) * (self.weight.mu - weight_prior_mu)**2 / weight_sigma2_a )
-            weight_div =  (1- weight_frac * weight_exp).sum() / (self.alpha*(1-self.alpha))
+            weight_sigma2_a = alpha* weight_prior_sigma**2 + (1-alpha)* self.weight.sigma**2
+            weight_frac = (weight_prior_sigma**alpha) * (self.weight.sigma**(1-alpha)) / torch.sqrt(weight_sigma2_a)
+            weight_exp  = torch.exp( - 0.5 * (alpha) * (1-alpha) * (self.weight.mu - weight_prior_mu)**2 / weight_sigma2_a )
+            weight_div =  (1- weight_frac * weight_exp).sum() / (alpha*(1-alpha))
             
-            bias_sigma2_a = self.alpha* bias_prior_sigma**2 + (1-self.alpha)* self.bias.sigma**2
-            bias_frac = (bias_prior_sigma**self.alpha) * (self.bias.sigma**(1-self.alpha)) / torch.sqrt(bias_sigma2_a)
-            bias_exp  = torch.exp( - 0.5 * (self.alpha) * (1-self.alpha) * (self.bias.mu - bias_prior_mu)**2 / bias_sigma2_a )
-            bias_div =  (1- bias_frac * bias_exp).sum() / (self.alpha*(1-self.alpha))
+            bias_sigma2_a = alpha* bias_prior_sigma**2 + (1-alpha)* self.bias.sigma**2
+            bias_frac = (bias_prior_sigma**alpha) * (self.bias.sigma**(1-alpha)) / torch.sqrt(bias_sigma2_a)
+            bias_exp  = torch.exp( - 0.5 * (alpha) * (1-alpha) * (self.bias.mu - bias_prior_mu)**2 / bias_sigma2_a )
+            bias_div =  (1- bias_frac * bias_exp).sum() / (alpha*(1-alpha))
             
             return weight_div + bias_div
 
         # Hellinger Distance 
-        elif self.div_type == "HEL":
+        elif div_type == "HEL":
             # this one is redirected at layer declaration to div_type="A", alpha=0.5
             return self.divergence(unlearn = unlearn, div_type = 'A', alpha = 0.5)
 
 #         # Pearson Divergence
-        elif self.div_type == "PEAR":
+        elif div_type == "PEAR":
             self.divergence(unlearn = unlearn, div_type = 'A', alpha = 2)

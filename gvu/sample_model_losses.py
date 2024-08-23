@@ -3,9 +3,9 @@ import torch.nn.functional as F
 
 
 def sample_model_losses(model, x, target, samples, device, 
-                        adj_lam = 0, rkl = False,
-                        prior_loss_weight = 0, ewc_weight = 0,
                         unlearn = False, classification = True,
+                        adj_lam = 0, rkl = False,
+                        prior_loss_weight = 0,
                         div_type = None, alpha = None):
         
 

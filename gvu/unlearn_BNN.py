@@ -32,6 +32,11 @@ def unlearn_BNN(model, optimizer, forget_loader, val_loader, unlearn_config, ret
     
     wandb.define_metric("unlearn/global_step")
     wandb.define_metric("unlearn/*", step_metric="unlearn/global_step")
+    
+    method = unlearn_config['method']
+    
+    adj_lam = unlearn_config['adj_lam']
+
 
     for epoch in tqdm(range(0, n_epochs)):
 
@@ -41,18 +46,15 @@ def unlearn_BNN(model, optimizer, forget_loader, val_loader, unlearn_config, ret
             
             results = sample_model_losses(
                 model, data, target, samples=samples, device=device,
-                prior_loss_weight=unlearn_config['prior_loss_weight'], unlearn=True,
-                classification=True, div_type=unlearn_config['unlearn_div_type']
+                unlearn=True, classification=True,
+                prior_loss_weight=unlearn_config['prior_loss_weight'], adj_lam = unlearn_config['adj_lam'],
+                div_type=unlearn_config['div_type'], alpha = unlearn_config['alpha']
             )
+
             
-            if results['prior_pred_cov_loss'] is None:
-                results['prior_pred_cov_loss'] = 0
-            if results['prior_pred_mean_loss'] is None:
-                results['prior_pred_mean_loss'] = 0
-            
-            gvo = - (1 - unlearn_config['prior_loss_weight']) * results['negative_log_likelihood']
-            gvo += unlearn_config['prior_loss_weight'] * unlearn_config['prior_cov_weight'] * results['prior_pred_cov_loss']
-            gvo += unlearn_config['prior_loss_weight'] * (1 - unlearn_config['prior_cov_weight']) * results['prior_pred_mean_loss']
+            gvo = -  results['negative_log_likelihood']
+            if results['prior_pred_mean_loss'] is not None:
+                gvo += unlearn_config['prior_loss_weight'] * results['prior_pred_mean_loss']
             gvo += results['prior_regularisation_term'] / forget_set_size
 
             results['generalized_variational_objective'] = gvo
