@@ -14,7 +14,7 @@ def generate_classification_sets(dataset_config:dict, seed=42):
     original_test_set = dataset_config['test_set']
     val_size = dataset_config['val_size']
     num_classes = dataset_config['target_dims']
-    val_size_per_class = val_size/num_classes
+    val_size_per_class = int(val_size/num_classes)
     
     class_indices = {i: [] for i in range(num_classes)}
 
