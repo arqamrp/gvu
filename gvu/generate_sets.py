@@ -40,7 +40,7 @@ def generate_classification_sets(dataset_config:dict, seed=42):
     dataset_config['test_set'] = test_set
 
     # Generate the training set without validation samples
-    full_train_set = dataset_config['train_set']
+    full_train_set = dataset_config['full_train_set']
     dataset_config['full_train_size'] = len(full_train_set)
     dataset_config['forget_sets'] = {}
     
