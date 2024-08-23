@@ -55,8 +55,8 @@ class BayesianLinear(nn.Module):
             w = self.weight.mu
             b = self.bias.mu
 
-
-        # self.posterior_log_probs = self.weight.log_prob(w) + self.bias.log_prob(b)
+        if not prior:
+            self.posterior_log_probs = self.weight.log_prob(w) + self.bias.log_prob(b)
         # self.prior_log_probs = self.weight_prior.log_prob(w) + self.bias_prior.log_prob(b)
         # self.frozen_prior_log_probs = self.weight_frozen_prior.log_prob(w) + self.bias_frozen_prior.log_prob(b)
 
