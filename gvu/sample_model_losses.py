@@ -8,8 +8,6 @@ def sample_model_losses(model, x, target, samples, device,
                         unlearn = False, classification = True,
                         div_type = None, alpha = None):
         
-        if adj_lam != 0:
-            max_logprobs= model.max_log_probs_frozen_prior()
 
         if rkl:
             pass
@@ -33,7 +31,7 @@ def sample_model_losses(model, x, target, samples, device,
                 prior_preds[i] = model.forward(x, prior = True)
             preds[i] = model.forward(x, sample = True)
         
-            if model.posterior_log_prob() > adj_lam * model.max_log_probs_frozen_prior():
+            if model.posterior_log_prob() > adj_lam * model.max_log_prob_frozen_prior():
                 adjust[i, :] += 1
         
         # compute negative log likelihood

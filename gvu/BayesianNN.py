@@ -13,7 +13,7 @@ class BayesianNN(nn.Module):
         for i in range(len(layers_config) - 1):
             self.layers.append(BayesianLinear(layers_config[i], layers_config[i + 1], model_init_config))        
 
-        self.posterior_log_probs = None
+        self.posterior_log_prob = None
         self.fisher_info = None
         
     def forward(self, x, sample = True, prior = False, frozen_prior = False):
@@ -22,7 +22,7 @@ class BayesianNN(nn.Module):
             x = F.relu( layer(x, sample = sample, prior = prior, frozen_prior = frozen_prior))        
         x = self.layers[-1](x, sample = sample, prior = prior)
         if not prior:
-            self.posterior_log_probs = sum(layer.posterior_log_probs for layer in self.layers)
+            self.posterior_log_prob = sum(layer.posterior_log_prob for layer in self.layers)
             # self.prior_log_probs = sum(layer.prior_log_probs for layer in self.layers)
             # self.frozen_prior_log_probs = sum(layer.frozen_prior_log_probs for layer in self.layers)
 

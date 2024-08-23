@@ -33,7 +33,7 @@ class BayesianLinear(nn.Module):
         self.bias_prior_rho = nn.Parameter(torch.log(torch.exp(torch.tensor(model_init_config['prior_sigma'])) - 1) * torch.ones(out_features, ) , requires_grad = False)
         self.bias_prior = Gaussian(self.bias_prior_mu, self.bias_prior_rho)
         
-        self.current_log_probs = None
+        self.posterior_log_prob = None
 
         self.weight_frozen_prior_mu = None
         self.weight_frozen_prior_rho = None
@@ -56,7 +56,7 @@ class BayesianLinear(nn.Module):
             b = self.bias.mu
 
         if not prior:
-            self.posterior_log_probs = self.weight.log_prob(w) + self.bias.log_prob(b)
+            self.posterior_log_prob = self.weight.log_prob(w) + self.bias.log_prob(b)
         # self.prior_log_probs = self.weight_prior.log_prob(w) + self.bias_prior.log_prob(b)
         # self.frozen_prior_log_probs = self.weight_frozen_prior.log_prob(w) + self.bias_frozen_prior.log_prob(b)
 
@@ -73,7 +73,7 @@ class BayesianLinear(nn.Module):
         self.weight_frozen_prior = Gaussian(self.weight_frozen_prior_mu, self.weight_frozen_prior_rho)
         self.bias_frozen_prior = Gaussian(self.bias_frozen_prior_mu, self.bias_frozen_prior_rho)
 
-    def max_log_probs_frozen_prior(self):
+    def max_log_prob_frozen_prior(self):
         return self.weight_frozen_prior.log_prob(self.weight_frozen_prior_mu) + self.bias_frozen_prior.log_prob(self.bias_frozen_prior_mu)
     
     def divergence(self, unlearn = False, div_type = None, alpha = None):        
