@@ -14,8 +14,8 @@ def is_dataset_downloaded(dataset_path):
 parser = argparse.ArgumentParser(description='Train and Unlearn Models with Custom Configuration')
 
 parser.add_argument('--retain', type = bool, default = True, help = 'Whether to train on the retain set')
-parser.add_argument('--full_train', type = bool, default = False, help = 'Whether to train on the full train set')
-parser.add_argument('--unlearn', type = bool, default = False, help = 'Whether to unlearn')
+parser.add_argument('--full_train', type = bool, default = True, help = 'Whether to train on the full train set')
+parser.add_argument('--unlearn', type = bool, default = True, help = 'Whether to unlearn')
 
 # parser.add_argument('--unlearn_method', type=str, default=None, help='Method for unlearning. Options: [eubo, pm]')
 
@@ -68,7 +68,7 @@ if __name__ == '__main__':
                     {0 : 5000, 1: 5000}
                 ]
             },
-            
+
             {
                 'name': 'MNIST',
                 'classification': True,

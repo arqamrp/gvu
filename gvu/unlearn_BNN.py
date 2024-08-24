@@ -61,6 +61,7 @@ def unlearn_BNN(model, optimizer, forget_loader, val_loader, unlearn_config, ret
                 print(results)
             
             gvo.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
             optimizer.step()
             
             # Log to wandb without using `global_step`
