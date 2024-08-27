@@ -27,7 +27,7 @@ parser.add_argument('--adj_lam', type=float, default=0., help='Likelihood adjust
 parser.add_argument('--plw', type=float, default=0., help='Prior loss weight')
 
 parser.add_argument('--fset', default = None, type=int, help='Forget set index')  # Forget set index
-parser.add_argument('--dataset', default = None, type=int, help='Dataset name')  # Dataset index
+parser.add_argument('--dataset', default = None, type=str, help='Dataset name')  # Dataset index
 
 # parser.add_argument('--unlearn_div_type', type=str, default= None, help='Divergence type for unlearning (default: RKL)')
 # parser.add_argument('--unlearn_alpha', type=float, default=None, help='Alpha value for unlearning divergence (if applicable)')
