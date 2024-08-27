@@ -89,3 +89,5 @@ def sample_model_losses(model, x, target, samples, device,
         if any(torch.isnan(results[key]).any() for key in results):
             print('NaN detected in results')
             print(results)
+        
+        return results
