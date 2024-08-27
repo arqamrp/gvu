@@ -7,6 +7,7 @@ from learn_unlearn import learn_unlearn
 import os
 import argparse
 
+
 def is_dataset_downloaded(dataset_path):
     return os.path.exists(dataset_path)
 

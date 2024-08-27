@@ -44,7 +44,13 @@ def train_BNN(model, optimizer, train_loader, val_loader, train_config, path, ve
             
             gvo.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
-            optimizer.step()
+            
+            # check if any gradients are nan
+            if any(torch.isnan(p.grad).any() for p in model.parameters()):
+                print('NaN gradients detected. Skipping update.')
+                continue
+            else:
+                optimizer.step()
             
             # Log to wandb without using `global_step`
             wandb.log({'train/global_step': epoch * num_batches + batch_idx, 

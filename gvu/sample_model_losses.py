@@ -1,4 +1,5 @@
 import torch
+import math
 import torch.nn.functional as F
 
 
@@ -27,7 +28,7 @@ def sample_model_losses(model, x, target, samples, device,
             for i in range(samples):
                 if prior_loss_weight != 0 and unlearn:
                     prior_preds[i] = model.forward(x, prior = True)                
-                if model.posterior_log_prob() > adj_lam * model.max_log_prob_frozen_prior():
+                if model.posterior_log_prob() >  model.max_log_prob_frozen_prior() + math.log(adj_lam) :
                     adjust[i, :] += 1
         else:
             adjust = 1
@@ -77,8 +78,14 @@ def sample_model_losses(model, x, target, samples, device,
         
         divergence = model.divergence(unlearn = unlearn, div_type = div_type, alpha = alpha)
         
-        return {
+        
+
+        results = {
             'prior_regularisation_term' : divergence,
             'negative_log_likelihood': negative_log_likelihood,
             'prior_pred_mean_loss' : prior_pred_mean_loss,
         }
+
+        if any(torch.isnan(results[key]).any() for key in results):
+            print('NaN detected in results')
+            print(results)

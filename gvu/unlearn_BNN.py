@@ -62,7 +62,12 @@ def unlearn_BNN(model, optimizer, forget_loader, val_loader, unlearn_config, ret
             
             gvo.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
-            optimizer.step()
+
+            if any(torch.isnan(p.grad).any() for p in model.parameters()):
+                print('NaN gradients detected. Skipping update.')
+                continue
+            else:
+                optimizer.step()
             
             # Log to wandb without using `global_step`
             wandb.log({'unlearn/global_step': epoch * num_batches + batch_idx, 
