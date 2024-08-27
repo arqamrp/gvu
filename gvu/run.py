@@ -25,6 +25,10 @@ parser.add_argument('--alpha', type=float, default=None, help='Alpha value for t
 
 parser.add_argument('--adj_lam', type=float, default=0., help='Likelihood adjustment threshold')
 parser.add_argument('--plw', type=float, default=0., help='Prior loss weight')
+
+parser.add_argument('--fset', default = None, type=int, help='Forget set index')  # Forget set index
+parser.add_argument('--dataset', default = None, type=int, help='Dataset name')  # Dataset index
+
 # parser.add_argument('--unlearn_div_type', type=str, default= None, help='Divergence type for unlearning (default: RKL)')
 # parser.add_argument('--unlearn_alpha', type=float, default=None, help='Alpha value for unlearning divergence (if applicable)')
 
@@ -42,8 +46,8 @@ if __name__ == '__main__':
         #     args.unlearn_alpha = args.train_alpha
 
 
-        dataset_configs = [
-            {
+        dataset_configs = {
+            'MNIST': {
                 'name': 'FMNIST',
                 'classification': True,
                 'target_dims':  10,
@@ -70,8 +74,7 @@ if __name__ == '__main__':
                 ]
             },
 
-            {
-                'name': 'MNIST',
+            'MNIST': {
                 'classification': True,
                 'target_dims':  10,
                 
@@ -96,7 +99,7 @@ if __name__ == '__main__':
                     {0 : 5000, 1: 5000}
                 ]
             }
-        ]
+        }
 
         model_init_config = {
             'layers': [784, 128, 10],
@@ -140,7 +143,19 @@ if __name__ == '__main__':
             'sample_size': 10,
         }
 
-        for dataset_config in dataset_configs:
+        if args.dataset is None and args.fset is None:
+            for dataset_config in dataset_configs:
+                generate_classification_sets(dataset_config)
+                for forget_idx in range(len(dataset_config['forget_set_configs'])):
+                    learn_unlearn(dataset_config, forget_idx, learn_unlearn_config=learn_unlearn_config, model_init_config=model_init_config)
+
+        elif args.dataset is not None:
+            dataset_config = dataset_configs[args.dataset]
             generate_classification_sets(dataset_config)
-            for forget_idx in range(len(dataset_config['forget_set_configs'])):
-                learn_unlearn(dataset_config, forget_idx, learn_unlearn_config=learn_unlearn_config, model_init_config=model_init_config)
+            if args.fset is not None:
+                learn_unlearn(dataset_config, args.fset, learn_unlearn_config=learn_unlearn_config, model_init_config=model_init_config)
+            else:
+                for forget_idx in range(len(dataset_config['forget_set_configs'])):
+                    learn_unlearn(dataset_config, forget_idx, learn_unlearn_config=learn_unlearn_config, model_init_config=model_init_config)
+                 
+                 
