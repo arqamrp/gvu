@@ -63,7 +63,7 @@ def unlearn_BNN(model, optimizer, forget_loader, val_loader, unlearn_config, ret
             gvo.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
 
-            if any(torch.isnan(p.grad).any() for p in model.parameters()):
+            if any(torch.isnan(p.grad if p.grad is not None else torch.zeros(1)).any() for p in model.parameters()):
                 print('NaN gradients detected. Skipping update.')
                 continue
             else:
