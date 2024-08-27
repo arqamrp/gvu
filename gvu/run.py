@@ -47,7 +47,7 @@ if __name__ == '__main__':
 
 
         dataset_configs = {
-            'MNIST': {
+            'FMNIST': {
                 'name': 'FMNIST',
                 'classification': True,
                 'target_dims':  10,
@@ -75,6 +75,7 @@ if __name__ == '__main__':
             },
 
             'MNIST': {
+                'name': 'MNIST',
                 'classification': True,
                 'target_dims':  10,
                 
