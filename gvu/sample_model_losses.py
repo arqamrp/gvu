@@ -86,7 +86,8 @@ def sample_model_losses(model, x, target, samples, device,
             'prior_pred_mean_loss' : prior_pred_mean_loss,
         }
 
-        if any(torch.isnan(results[key]).any() for key in results):
+        if any(torch.isnan(results[key] if results[key] is not None else torch.zeros(1) ).any() for key in results):
+
             print('NaN detected in results')
             print(results)
         
