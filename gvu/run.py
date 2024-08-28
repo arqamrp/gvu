@@ -14,9 +14,9 @@ def is_dataset_downloaded(dataset_path):
 # Set up argument parser
 parser = argparse.ArgumentParser(description='Train and Unlearn Models with Custom Configuration')
 
-parser.add_argument('--retain', type = bool, default = True, help = 'Whether to train on the retain set')
-parser.add_argument('--full_train', type = bool, default = True, help = 'Whether to train on the full train set')
-parser.add_argument('--unlearn', type = bool, default = True, help = 'Whether to unlearn')
+parser.add_argument('--retain', type = int, default = 1, help = 'Whether to train on the retain set')
+parser.add_argument('--full_train', type = int, default = 1, help = 'Whether to train on the full train set')
+parser.add_argument('--unlearn', type = int, default = 1, help = 'Whether to unlearn')
 
 # parser.add_argument('--unlearn_method', type=str, default=None, help='Method for unlearning. Options: [eubo, pm]')
 
@@ -103,7 +103,7 @@ if __name__ == '__main__':
         }
 
         model_init_config = {
-            'layers': [784, 128, 10],
+            'layers': [784, 128, 128, 10],
             'seed': 42,
             'init_mu_low': -0.2,
             'init_mu_high': 0.2,
