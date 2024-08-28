@@ -174,7 +174,7 @@ class BayesianLinear(nn.Module):
             bias_div += 0.5 * (self.bias.mu - bias_midpoint_mu)**2 / (bias_midpoint_sigma)**2 
             bias_div += 0.5 * (self.bias.sigma**2 - bias_midpoint_mu**2)/(bias_midpoint_mu)**2
             bias_div += torch.log(bias_midpoint_mu/self.bias.sigma).sum()
-            
+            bias_div = bias_div.sum()
             return 0.5 * (weight_div + bias_div)
         
         # Alpha-Renyi Divergence
