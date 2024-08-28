@@ -18,10 +18,9 @@ def learn_unlearn(dataset_config, forget_idx, learn_unlearn_config, model_init_c
 
     plw = learn_unlearn_config['prior_loss_weight']
     adj_lam = learn_unlearn_config['adj_lam']
-    # method = learn_unlearn_config['unlearn_method']
+    # method = learn_unlearn_config['unlearn_method']``
 
-    
-    project_id = f"GVU-{name}-{forget_idx}-{div_type}-{adj_lam}-{plw}"
+    project_id = f"GVU-{name}-{div_type}" 
     
     if not os.path.exists(f'ckp/{project_id}'):
         os.makedirs(f'ckp/{project_id}')
@@ -75,10 +74,10 @@ def learn_unlearn(dataset_config, forget_idx, learn_unlearn_config, model_init_c
     
     # unlearning on forget set
     if learn_unlearn_config['unlearn']:
-        unlearn_path = f'ckp/{project_id}/unlearn'
+        unlearn_path = f'ckp/{project_id}/unlearn-{forget_idx}-{adj_lam}-{plw}'
         if not os.path.exists(unlearn_path):
             os.makedirs(unlearn_path)
-        wandb.init(project = project_id + '-unlearn', config= learn_unlearn_config)
+        wandb.init(project = project_id + f'-unlearn-{forget_idx}-{adj_lam}-{plw}', config= learn_unlearn_config)
         wandb.watch(full_trainset_model, log="all", log_freq=10)
         optimizer = opt(full_trainset_model.parameters(), lr = learn_unlearn_config['lr'])
         unlearn_BNN(full_trainset_model, optimizer = optimizer, forget_loader= forget_loader, val_loader = val_loader, unlearn_config = learn_unlearn_config, retain_model = retain_model, path = unlearn_path)

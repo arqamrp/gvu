@@ -32,8 +32,6 @@ class BayesianLinear(nn.Module):
         self.bias_prior_mu = nn.Parameter(model_init_config['prior_mu'] * torch.ones(out_features, ) , requires_grad = False)
         self.bias_prior_rho = nn.Parameter(torch.log(torch.exp(torch.tensor(model_init_config['prior_sigma'])) - 1) * torch.ones(out_features, ) , requires_grad = False)
         self.bias_prior = Gaussian(self.bias_prior_mu, self.bias_prior_rho)
-        
-        self.posterior_log_prob = None
 
         self.weight_frozen_prior_mu = None
         self.weight_frozen_prior_rho = None
@@ -65,8 +63,8 @@ class BayesianLinear(nn.Module):
         self.last_sampled_bias = b
         return F.linear(x, w, b)
 
-        def posterior_log_prob(self):
-            return self.weight.log_prob(self.last_sampled_weight) + self.bias.log_prob(self.last_sampled_bias)
+    def posterior_log_prob(self):
+        return self.weight.log_prob(self.last_sampled_weight) + self.bias.log_prob(self.last_sampled_bias)
         
         # self.prior_log_probs = self.weight_prior.log_prob(w) + self.bias_prior.log_prob(b)
         # self.frozen_prior_log_probs = self.weight_frozen_prior.log_prob(w) + self.bias_frozen_prior.log_prob(b)

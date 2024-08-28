@@ -23,13 +23,22 @@ def sample_model_losses(model, x, target, samples, device,
         
         # holding tensors
         if unlearn:
-            adjust = torch.zeros(samples, batch_size).to(device)
-            prior_preds = torch.zeros(samples, batch_size, target_dims).to(device)
-            for i in range(samples):
-                if prior_loss_weight != 0 and unlearn:
-                    prior_preds[i] = model.forward(x, prior = True)                
-                if model.posterior_log_prob() >  model.max_log_prob_frozen_prior() + math.log(adj_lam) :
+            
+            # prior loss
+            if prior_loss_weight != 0:
+                prior_preds = torch.zeros(samples, batch_size, target_dims).to(device)
+                for i in range(samples):
+                    prior_preds[i] = model.forward(x, prior = True)
+            
+            if adj_lam != 0:
+                adjust = torch.zeros(samples, batch_size).to(device)
+                threshold = math.log(adj_lam) * model.max_log_prob_frozen_prior() 
+
+                if model.posterior_log_prob() > threshold:
                     adjust[i, :] += 1
+            else:
+                adjust = 1
+
         else:
             adjust = 1
 
